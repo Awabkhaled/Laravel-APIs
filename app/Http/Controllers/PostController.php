@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\models\Post;
 use App\Http\Requests\StorePostRequest;
 use App\Http\Requests\UpdatePostRequest;
+use Illuminate\Support\Facades\Log;
 
 class PostController extends Controller
 {
@@ -22,7 +23,16 @@ class PostController extends Controller
      */
     public function store(StorePostRequest $request)
     {
-        return Post::create($request->all());
+        $post = $request->all();
+        if ($request->hasFile('cover_image')) {
+            $image = $request->file('cover_image');
+            $imageName = time() . '_' . $image->getClientOriginalName();
+            $imageName = str_replace(' ','_',$imageName);
+            $image->move(public_path('uploaded_images'), $imageName);
+            $post['cover_image'] = 'uploaded_images/' . $imageName;
+            $post['cover_image'] = asset($post['cover_image']);
+        }
+        return Post::create($post);
     }
 
     /**
@@ -46,15 +56,25 @@ class PostController extends Controller
     public function update(UpdatePostRequest $request, string $id)
     {
         [$isValid, $message, $statusCode] = helper::Validate_id($id, Post::class);
-        if($isValid)
+        if(!$isValid)
         {
-            $post = Post::find($id);
-            $post->update($request->all());
-            return $post;
-        }
-        else{
             return response()->json(['error' => $message],$statusCode);
         }
+
+        $post = Post::find($id);
+        if ($request->hasFile('cover_image')) {
+            $oldImagePath = public_path('uploaded_images/'.basename($post->cover_image));
+            unlink($oldImagePath);
+            $image = $request->file('cover_image');
+            $imageName = time() . '_' . $image->getClientOriginalName();
+            $imageName = str_replace(' ','_',$imageName);
+            $image->move(public_path('uploaded_images'), $imageName);
+            $post['cover_image'] = 'uploaded_images/' . $imageName;
+            $post['cover_image'] = asset($post['cover_image']);
+        }
+
+        $post->update($request->except('cover_image'));
+        return $post;
     }
 
     /**
@@ -83,6 +103,9 @@ class PostController extends Controller
         return $softDeletedPosts;
     }
 
+    /**
+     * Restore soft deleted post
+     */
     public function restore($id)
     {
         if(is_numeric( $id )){

@@ -11,6 +11,7 @@ class StorePostRequest extends BasePostRequest
         $this->returnedRules = [
             'title' => ['required', 'string', 'max:255'],
             'body' => ['required', 'string'],
+            'cover_image' => ['required', 'image'],
             'pinned' => ['required', 'boolean'],
         ];
     }

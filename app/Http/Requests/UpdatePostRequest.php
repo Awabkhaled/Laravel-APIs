@@ -11,6 +11,7 @@ class UpdatePostRequest extends BasePostRequest
         $this->returnedRules = [
             'title' => ['sometimes', 'required', 'string', 'max:255'],
             'body' => ['sometimes', 'required', 'string'],
+            'cover_image' => ['sometimes', 'required', 'image'],
             'pinned' => ['sometimes', 'required', 'boolean'],
         ];
     }

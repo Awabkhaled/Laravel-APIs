@@ -9,7 +9,7 @@ class Post extends Model
 {
     use SoftDeletes;
     public $timestamps = false;
-    protected $fillable = ['title', 'body', 'pinned'];
+    protected $fillable = ['title', 'body', 'cover_image', 'pinned'];
     protected $hidden = [
         'deleted_at'
     ];
