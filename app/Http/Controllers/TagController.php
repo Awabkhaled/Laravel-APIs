@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\TagRequest;
 use App\Models\Tag;
+use App\Helpers\ValidationHelpers\ValidationHelpers as helper;
 use Illuminate\Support\Facades\Log;
 
 class TagController extends Controller
@@ -31,13 +32,14 @@ class TagController extends Controller
      */
     public function show($id)
     {
-        $validationResult = TagController::validateId($id);
-        if($validationResult != $id)
+        [$isValid, $message, $statusCode] = helper::Validate_id($id, Tag::class);
+        if($isValid)
         {
-            return TagController::JsonResponse(['error' => $validationResult],404);
+            return TagController::JsonResponse(Tag::find( $id ),200);
         }
-
-        return TagController::JsonResponse(Tag::find( $id ),200);
+        else{
+            return TagController::JsonResponse(['error' => $message],$statusCode);
+        }
     }
 
     /**
@@ -45,15 +47,16 @@ class TagController extends Controller
      */
     public function update(TagRequest $request, $id)
     {
-        $validationResult = TagController::validateId($id);
-        if($validationResult != $id)
+        [$isValid, $message, $statusCode] = helper::Validate_id($id, Tag::class);
+        if($isValid)
         {
-            return TagController::JsonResponse(['error' => $validationResult],404);
+            $tag = Tag::find($id);
+            $tag->update($request->only(['name']));
+            return TagController::JsonResponse($tag,200);
         }
-
-        $tag = Tag::find($id);
-        $tag->update($request->only(['name']));
-        return TagController::JsonResponse($tag,200);
+        else{
+            return TagController::JsonResponse(['error' => $message],$statusCode);
+        }
     }
 
     /**
@@ -61,31 +64,16 @@ class TagController extends Controller
      */
     public function destroy(string $id)
     {
-        $validationResult = TagController::validateId($id);
-        if($validationResult != $id)
+        [$isValid, $message, $statusCode] = helper::Validate_id($id, Tag::class);
+        if($isValid)
         {
-            return TagController::JsonResponse(['error' => $validationResult],404);
+            $tag = Tag::find($id);
+            $tag->delete();
+            return TagController::JsonResponse(null,204);
         }
-        $tag = Tag::find($id);
-        $tag->delete();
-        return TagController::JsonResponse(null,204);
-    }
-
-    /**
-     * A helper method to see if the id is valid and if it is
-     * exist in the database
-     */
-    private static function validateId($id){
-        $model = Tag::class;
-        if (!is_numeric($id)) {
-            return "Tag is not valid";
+        else{
+            return TagController::JsonResponse(['error' => $message],$statusCode);
         }
-
-        if (!$model::where('id', $id)->exists()) {
-            return 'Tag not found';
-        }
-
-        return $id;
     }
 
     /**

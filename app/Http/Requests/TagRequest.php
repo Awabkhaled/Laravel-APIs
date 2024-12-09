@@ -20,13 +20,10 @@ class TagRequest extends FormRequest
 
     /**
      * Get the validation rules that apply to the request.
-     *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
         $currentTagId = $this->route("tag");
-        Log::debug("", [""=> $currentTagId]);
         return [
             'name' => [
                 'required',
@@ -41,7 +38,7 @@ class TagRequest extends FormRequest
     {
         return [
             'name.required' => 'The name is required',
-            'name.unique' => 'The name is already taken, Choose another one',
+            'name.unique' => 'The name is already taken',
             'name.string' => 'The name must be a string',
             'name.max' => 'The name size has to be less than or equal to 255 letter',
         ];

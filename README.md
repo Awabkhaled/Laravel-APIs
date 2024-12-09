@@ -3,6 +3,10 @@ This is my first interaction with laravel or PHP, and here is a description of t
 # Database
 - I am using local MySQL database I have configured in the .env file.
 
+
+
+
+
 # Authentication
 - Used sanctum to apply Token Authentication.
 - Applied the expiration date in the register and in the login endpoints (explained bellow).
@@ -29,6 +33,9 @@ This is my first interaction with laravel or PHP, and here is a description of t
 - You can check the authentication heading in the Tags part to see How I handled it using Routes.
 ## Testing Using Postman Note
 - To Test it in postman you have to add the `Accept` header and with the value `application/json`, If the Accept header is not set correctly or not passed in, Laravel might try to treat the request as a web request and try to reach a route for the login page, leading to the `Route [login] not defined` error.
+
+
+
 
 # Tags
 ## Tag Model

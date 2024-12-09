@@ -11,13 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn('email');
-            $table->dropColumn('email_verified_at');
-            $table->dropColumn('created_at');
-            $table->dropColumn('updated_at');
-
-            $table->string('phone_number')->after('name');
+        Schema::table('posts', function (Blueprint $table) {
+            $table->softDeletes();
         });
     }
 
