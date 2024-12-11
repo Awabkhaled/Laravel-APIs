@@ -13,4 +13,10 @@ class Post extends Model
     protected $hidden = [
         'deleted_at'
     ];
+
+    public function tags()
+    {
+        return $this->belongsToMany(Tag::class);
+    }
+
 }

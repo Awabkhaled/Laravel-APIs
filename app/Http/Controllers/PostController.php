@@ -2,7 +2,8 @@
 
 namespace App\Http\Controllers;
 use App\Helpers\ValidationHelpers\ValidationHelpers as helper;
-use Illuminate\Http\Request;
+use App\Http\Resources;
+use App\Http\Resources\PostResource;
 use App\models\Post;
 use App\Http\Requests\StorePostRequest;
 use App\Http\Requests\UpdatePostRequest;
@@ -15,7 +16,8 @@ class PostController extends Controller
      */
     public function index()
     {
-        return Post::all()->sortBy('pinned', SORT_REGULAR, true)->values();
+        $posts = Post::with('tags')->get()->sortBy('pinned', SORT_REGULAR, true)->values();
+        return PostResource::collection($posts);
     }
 
     /**
@@ -23,16 +25,19 @@ class PostController extends Controller
      */
     public function store(StorePostRequest $request)
     {
-        $post = $request->all();
+        $post_data = $request->validated();
         if ($request->hasFile('cover_image')) {
             $image = $request->file('cover_image');
             $imageName = time() . '_' . $image->getClientOriginalName();
             $imageName = str_replace(' ','_',$imageName);
             $image->move(public_path('uploaded_images'), $imageName);
-            $post['cover_image'] = 'uploaded_images/' . $imageName;
-            $post['cover_image'] = asset($post['cover_image']);
+            $post_data['cover_image'] = 'uploaded_images/' . $imageName;
+            $post_data['cover_image'] = asset($post_data['cover_image']);
         }
-        return Post::create($post);
+        $createdPost = Post::create($post_data);
+        $tags = array_unique($request->tags);
+        $createdPost->tags()->sync($tags);
+        return new PostResource($createdPost);
     }
 
     /**
@@ -43,7 +48,7 @@ class PostController extends Controller
         [$isValid, $message, $statusCode] = helper::Validate_id($id, Post::class);
         if($isValid)
         {
-            return Post::find( $id );
+            return new PostResource(Post::find( $id ));
         }
         else{
             return response()->json(['error' => $message],$statusCode);
@@ -56,12 +61,16 @@ class PostController extends Controller
     public function update(UpdatePostRequest $request, string $id)
     {
         [$isValid, $message, $statusCode] = helper::Validate_id($id, Post::class);
+
+        // if the id is not valid
         if(!$isValid)
         {
             return response()->json(['error' => $message],$statusCode);
         }
 
         $post = Post::find($id);
+
+        // image update
         if ($request->hasFile('cover_image')) {
             $oldImagePath = public_path('uploaded_images/'.basename($post->cover_image));
             unlink($oldImagePath);
@@ -73,8 +82,23 @@ class PostController extends Controller
             $post['cover_image'] = asset($post['cover_image']);
         }
 
+        // Update Tags
+        if ($request->has('tags')) {
+            $newTags = array_unique($request->tags);
+            $existingTags = $post->tags->pluck('id')->toArray();
+            $post->tags()->detach();
+            if ($request->replace_whole_tags) {
+                $post->tags()->sync($newTags);
+            } else {
+                $allTags = array_unique(array_merge($existingTags, $newTags));
+                $post->tags()->attach($allTags);
+            }
+        }
+
         $post->update($request->except('cover_image'));
-        return $post;
+        $post->refresh();
+
+        return new PostResource($post);
     }
 
     /**
@@ -100,7 +124,7 @@ class PostController extends Controller
     public function trached()
     {
         $softDeletedPosts = Post::onlyTrashed()->get();
-        return $softDeletedPosts;
+        return PostResource::collection($softDeletedPosts);
     }
 
     /**
@@ -112,7 +136,7 @@ class PostController extends Controller
             $post = Post::onlyTrashed()->find($id);
             if($post){
                 $post->restore();
-                return ["message"=>"Post restored successfully","post"=>$post];
+                return ["message"=>"Post restored successfully","post"=>new PostResource($post)];
             }
             else{
                 $message = 'Id Does Not Exist In Softly Deleted Posts';

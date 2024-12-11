@@ -13,6 +13,8 @@ class StorePostRequest extends BasePostRequest
             'body' => ['required', 'string'],
             'cover_image' => ['required', 'image'],
             'pinned' => ['required', 'boolean'],
+            'tags' => ['required', 'array'],
+            'tags.*' => ['integer', 'exists:tags,id'],
         ];
     }
 }

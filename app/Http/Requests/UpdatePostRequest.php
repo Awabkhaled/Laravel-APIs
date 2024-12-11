@@ -13,6 +13,9 @@ class UpdatePostRequest extends BasePostRequest
             'body' => ['sometimes', 'required', 'string'],
             'cover_image' => ['sometimes', 'required', 'image'],
             'pinned' => ['sometimes', 'required', 'boolean'],
+            'tags' => ['sometimes', 'required', 'array'],
+            'tags.*' => ['integer', 'exists:tags,id'],
+            'replace_whole_tags' => ['required_with:tags', 'boolean'],
         ];
     }
 }

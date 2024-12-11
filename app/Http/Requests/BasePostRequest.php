@@ -36,4 +36,12 @@ class BasePostRequest extends FormRequest
             ], 400,[],JSON_PRETTY_PRINT)
         );
     }
+
+    public function messages()
+    {
+        return [
+            'tags.*.integer' => 'Invalid tag ID.',
+            'tags.*.exists' => 'One or more of the tag IDs do not exist.',
+        ];
+    }
 }
