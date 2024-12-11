@@ -143,3 +143,10 @@ This project is a RESTful API backend system built with Laravel. It implements u
 - If any errors occur during the process, they are caught and an error message is shown.
 #### The Schedule
 - The command is scheduled to run daily using Laravel's built-in task scheduler.
+
+---
+
+# Job calling an API Schedule
+- Created a job to call an API and returns it's results key
+- Created a scheduale to handle it to the queue worker
+- Some problem are facing me while I can not find answers to it
