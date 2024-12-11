@@ -5,8 +5,10 @@ use App\Helpers\ValidationHelpers\ValidationHelpers as helper;
 use App\Http\Resources;
 use App\Http\Resources\PostResource;
 use App\models\Post;
+use App\models\User;
 use App\Http\Requests\StorePostRequest;
 use App\Http\Requests\UpdatePostRequest;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
 class PostController extends Controller
@@ -16,7 +18,11 @@ class PostController extends Controller
      */
     public function index()
     {
-        $posts = Post::with('tags')->get()->sortBy('pinned', SORT_REGULAR, true)->values();
+        $posts = Post::where('user_id', Auth::id())
+                ->with('tags')
+                ->get()
+                ->sortBy('pinned', SORT_REGULAR, true)
+                ->values();
         return PostResource::collection($posts);
     }
 
@@ -26,6 +32,11 @@ class PostController extends Controller
     public function store(StorePostRequest $request)
     {
         $post_data = $request->validated();
+
+        //getting user id
+        $post_data['user_id'] = Auth::id();
+
+        // handling image
         if ($request->hasFile('cover_image')) {
             $image = $request->file('cover_image');
             $imageName = time() . '_' . $image->getClientOriginalName();
@@ -34,9 +45,14 @@ class PostController extends Controller
             $post_data['cover_image'] = 'uploaded_images/' . $imageName;
             $post_data['cover_image'] = asset($post_data['cover_image']);
         }
+
+        // creating the post
         $createdPost = Post::create($post_data);
+
+        // handling tags
         $tags = array_unique($request->tags);
         $createdPost->tags()->sync($tags);
+
         return new PostResource($createdPost);
     }
 
@@ -45,10 +61,11 @@ class PostController extends Controller
      */
     public function show(string $id)
     {
-        [$isValid, $message, $statusCode] = helper::Validate_id($id, Post::class);
+        $user_id = Auth::id();
+        [$isValid, $message, $statusCode] = helper::Validate_id($id, Post::class, $user_id);
         if($isValid)
         {
-            return new PostResource(Post::find( $id ));
+            return new PostResource(Post::find($id));
         }
         else{
             return response()->json(['error' => $message],$statusCode);
@@ -60,7 +77,8 @@ class PostController extends Controller
      */
     public function update(UpdatePostRequest $request, string $id)
     {
-        [$isValid, $message, $statusCode] = helper::Validate_id($id, Post::class);
+        $user_id = Auth::id();
+        [$isValid, $message, $statusCode] = helper::Validate_id($id, Post::class, $user_id);
 
         // if the id is not valid
         if(!$isValid)
@@ -68,6 +86,7 @@ class PostController extends Controller
             return response()->json(['error' => $message],$statusCode);
         }
 
+        // get the specific post
         $post = Post::find($id);
 
         // image update
@@ -106,7 +125,9 @@ class PostController extends Controller
      */
     public function destroy(string $id)
     {
-        [$isValid, $message, $statusCode] = helper::Validate_id($id, Post::class);
+        $user_id = Auth::id();
+        [$isValid, $message, $statusCode] = helper::Validate_id($id, Post::class, $user_id);
+
         if($isValid)
         {
             $post = Post::find($id);
@@ -123,7 +144,7 @@ class PostController extends Controller
      */
     public function trached()
     {
-        $softDeletedPosts = Post::onlyTrashed()->get();
+        $softDeletedPosts = Post::where('user_id', Auth::id())->onlyTrashed()->get();
         return PostResource::collection($softDeletedPosts);
     }
 
@@ -133,7 +154,7 @@ class PostController extends Controller
     public function restore($id)
     {
         if(is_numeric( $id )){
-            $post = Post::onlyTrashed()->find($id);
+            $post = Post::where('user_id', Auth::id())->onlyTrashed()->find($id);
             if($post){
                 $post->restore();
                 return ["message"=>"Post restored successfully","post"=>new PostResource($post)];

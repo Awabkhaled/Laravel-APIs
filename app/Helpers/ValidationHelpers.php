@@ -1,11 +1,16 @@
 <?php
 namespace App\Helpers\ValidationHelpers;
 class ValidationHelpers {
-    private static function check_id_in_model($id, $model){
-        if (!$model::where('id', $id)->exists()) {
-            return false;
+    private static function check_id_in_model($id, $model, $user_id=null){
+        // prepare the query by checking  if the ID exists
+        $query = $model::where('id', $id);
+
+        // add checking user to the query
+        if($user_id !== null){
+            $query->where('user_id', $user_id);
         }
-        return true;
+
+        return $query->exists();
     }
 
     /**
@@ -16,17 +21,17 @@ class ValidationHelpers {
      *   - if invalid: [false, message, status_code]
      *   - if valid: [true, null, null]
      */
-    public static function Validate_id($id, $model){
-        if(!is_numeric($id))
-        {
-            return [false, 'Invalid id Format', 400];
+    public static function Validate_id($id, $model, $user_id = null){
+        // Check if the ID is a number
+        if(!is_numeric($id)) {
+            return [false, 'Invalid ID Format', 400];
         }
 
-        if(!ValidationHelpers::check_id_in_model($id, $model))
-        {
-            return [false, 'Id Does Not Exist', 404];
-        }
+        // check if the id exist in the table witht he assigned user
+        if(!self::check_id_in_model($id, $model, $user_id)) {
 
+            return [false, 'Id Does Not Exist', 400];
+        }
         return [true, null, null];
     }
 }

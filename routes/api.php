@@ -22,9 +22,11 @@ Route::middleware('auth:sanctum')->group(function () {
 /**
  * Posts end points
  */
-Route::get('posts/trashed', [PostController::class,'trached']);
-Route::get('posts/restore/{id}', [PostController::class,'restore']);
-Route::resource('posts', PostController::class);
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('posts/trashed', [PostController::class,'trached']);
+    Route::get('posts/restore/{id}', [PostController::class,'restore']);
+    Route::resource('posts', PostController::class);
+});
 
 Route::get('/user', function (Request $request) {
     return $request->user();

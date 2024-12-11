@@ -19,11 +19,16 @@ class PostResource extends JsonResource
             'cover_image' => $this->cover_image,
             'pinned' => $this->pinned,
             'tags' => $this->tags->map(function ($tag) {
-                                        return [
-                                            'id' => $tag->id,
-                                            'name' => $tag->name,
-                                        ];
-                                    }),
+                return [
+                    'id' => $tag->id,
+                    'name' => $tag->name,
+                ];
+            }),
+            'user' => [
+                "id"=> $this->user->id,
+                "phone_number"=> $this->user->phone_number,
+                "name"=> $this->user->name,
+            ],
         ];
     }
 }
