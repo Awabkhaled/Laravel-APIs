@@ -127,3 +127,19 @@ This project is a RESTful API backend system built with Laravel. It implements u
 # Validation Helper
 - Created a helper class for validating IDs used in the request, ensuring that provided post IDs or tag IDs exist in the database before processing the request.
 - Added a method to check if a user is authorized to modify their own posts, preventing unauthorized access to other users' posts or tags.
+
+---
+
+# Force Deleting Deleted Posts Schedule
+- This feature ensures that any posts that have been soft-deleted for more than 30 days are permanently deleted from the database.
+- The process is scheduled to run automatically every day.
+### How it works:
+#### `clear_deleted_posts` Command
+-The command `app:clear_deleted_posts` is responsible for force-deleting posts that are older than 30 days and have been soft-deleted.
+- It fetches posts that have been soft-deleted for more than 30 days.
+- For each post, it deletes the associated cover image file from the server.
+- Then, it force-deletes the post from the database.
+- The command logs the IDs of the deleted posts.
+- If any errors occur during the process, they are caught and an error message is shown.
+#### The Schedule
+- The command is scheduled to run daily using Laravel's built-in task scheduler.
