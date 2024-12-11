@@ -13,17 +13,15 @@ This project is a RESTful API backend system built with Laravel. It implements u
 
 ---
 
-
 # Database
-
 - Using a local MySQL database configured in the `.env` file.
 
 ---
 
 
 # Authentication
-
-- Implemented token authentication using Sanctum.
+- Applied **Sanctum** middleware for user authentication, ensuring that routes requiring authentication are protected.
+- Used the `Route::middleware('auth:sanctum')->group(...)` to wrap the post and tag related routes, ensuring only authenticated users can create, update, delete, or view posts.
 - The authentication system includes registration and login endpoints with token expiration set for three days.
 ### AuthController
 - `register`
@@ -48,9 +46,7 @@ This project is a RESTful API backend system built with Laravel. It implements u
 
 ---
 
-
 # Tags
-
 ### Tag Model
 - I started witrh creating the Tag Model using the `php artisan make:model ModelName --migration`.
 - Made the name unique by adding the '->unique()' to the migration file.
@@ -75,11 +71,9 @@ This project is a RESTful API backend system built with Laravel. It implements u
 ### Authentication
 - Used the `sanctum` authentication system and applied it in the `Routes` using the middleware `Route::middleware('auth:sanctum')->group(....);`
 
-
 ---
 
 # Post
-
 ### Post Model
 - Created the `Post` model using the `php artisan make:model Post --migration` command.
 - Defined relationships to the `User` model (each post belongs to a user) and did the inverse relationship because if needed in the future.
@@ -130,16 +124,6 @@ This project is a RESTful API backend system built with Laravel. It implements u
 
 ---
 
-
 # Validation Helper
-
 - Created a helper class for validating IDs used in the request, ensuring that provided post IDs or tag IDs exist in the database before processing the request.
 - Added a method to check if a user is authorized to modify their own posts, preventing unauthorized access to other users' posts or tags.
-
----
-
-
-# Authentication
-
-- Applied **Sanctum** middleware for user authentication, ensuring that routes requiring authentication are protected.
-- Used the `Route::middleware('auth:sanctum')->group(...)` to wrap the post and tag related routes, ensuring only authenticated users can create, update, delete, or view posts.
