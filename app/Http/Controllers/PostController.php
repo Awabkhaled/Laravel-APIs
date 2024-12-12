@@ -32,10 +32,8 @@ class PostController extends Controller
     public function store(StorePostRequest $request)
     {
         $post_data = $request->validated();
-
         //getting user id
         $post_data['user_id'] = Auth::id();
-
         // handling image
         if ($request->hasFile('cover_image')) {
             $image = $request->file('cover_image');
@@ -77,9 +75,9 @@ class PostController extends Controller
      */
     public function update(UpdatePostRequest $request, string $id)
     {
+        $validated_data = $request->validated();
         $user_id = Auth::id();
         [$isValid, $message, $statusCode] = helper::Validate_id($id, Post::class, $user_id);
-
         // if the id is not valid
         if(!$isValid)
         {
@@ -113,8 +111,9 @@ class PostController extends Controller
                 $post->tags()->attach($allTags);
             }
         }
-
-        $post->update($request->except('cover_image'));
+        unset($validated_data["cover_image"]);
+        unset($validated_data["tags"]);
+        $post->update($validated_data);
         $post->refresh();
 
         return new PostResource($post);

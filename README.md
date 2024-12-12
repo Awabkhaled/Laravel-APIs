@@ -150,3 +150,11 @@ This project is a RESTful API backend system built with Laravel. It implements u
 - Created a job to call an API and returns it's results key
 - Created a scheduale to handle it to the queue worker
 - Some problem are facing me while I can not find answers to it
+
+---
+
+# stats API
+- Build the API that gets
+    - Number of all users.
+    - Number of all posts.
+    - Number of users with 0 posts.
